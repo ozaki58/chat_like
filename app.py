@@ -1,12 +1,12 @@
 import openai
 import streamlit as st
 from streamlit_chat import message
-import tweetscroll
+import tweetscroll as ts
 
 # Setting page title and header
 st.set_page_config(page_title="AVA", page_icon=":robot_face:")
-st.markdown("<h1 style='text-align: center;'>AVA - a totally harmless chatbot 😬</h1>", unsafe_allow_html=True)
-texts=tweetscroll.tweets
+st.markdown("<h1 style='text-align: center;'>好きな人と喋ろう</h1>", unsafe_allow_html=True)
+
 # Set org ID and API key
 openai.organization = "org-gdPQy5nvNbHoCtT9Lbqxn8rp"
 openai.api_key = "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"
@@ -14,18 +14,14 @@ openai.api_key = "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"
 # Initialise session state variables
 if 'generated' not in st.session_state:
     st.session_state['generated'] = []
+if 'texts' not in st.session_state:
+    st.session_state['texts'] = []    
 if 'past' not in st.session_state:
     st.session_state['past'] = []
 if 'messages' not in st.session_state:
     st.session_state['messages'] = [
         {"role": "system",
-         "content": f"""鈴木さんと対話のシミュレーションを行います。
-鈴木さんの発言サンプルを以下に列挙します。
-
-{texts}
-
-上記例を参考に、性格や口調、言葉の作り方を模倣し、鈴木さんとして回答を構築してください。
-ではシミュレーションを開始します。"""
+         "content": "あなたはモノマネのプロです"
         }
     ]
 if 'model_name' not in st.session_state:
@@ -39,17 +35,33 @@ if 'total_cost' not in st.session_state:
 
 # Sidebar - let user choose model, show total cost of current conversation, and let user clear the current conversation
 st.sidebar.title("Sidebar")
-model_name = st.sidebar.radio("Choose a model:", ("GPT-3.5", "GPT-4"))
+model_name = st.sidebar.radio("Choose a model:", ("gpt-3.5-turbo-16k", "GPT-4"))
 counter_placeholder = st.sidebar.empty()
 counter_placeholder.write(f"Total cost of this conversation: ${st.session_state['total_cost']:.5f}")
 clear_button = st.sidebar.button("Clear Conversation", key="clear")
 
+with st.sidebar.form("tweet_form", clear_on_submit=False):
+    twitter_id = st.text_input('twitterIDを入力してください')
+    submitted = st.form_submit_button("人格を作成")
+     
+     
 # Map model names to OpenAI model IDs
 if model_name == "GPT-3.5":
     model = "gpt-3.5-turbo"
 else:
     model = "gpt-4"
 
+if submitted:
+    st.session_state['texts']=ts.tweet_scrape(twitter_id)
+    st.session_state['messages'] = [
+        {"role": "system", "content": f"""鈴木さんと対話のシミュレーションを行います。
+鈴木さんの発言サンプルを以下に列挙します。
+         
+{st.session_state['texts']}
+
+上記例を参考に、性格や口調、言葉の作り方を模倣し、鈴木さんとして回答を構築してください。
+ではシミュレーションを開始します。"""}
+    ]
 # reset everything
 if clear_button:
     st.session_state['generated'] = []
@@ -57,6 +69,7 @@ if clear_button:
     st.session_state['messages'] = [
         {"role": "system", "content": "You are a helpful assistant."}
     ]
+    st.session_state['texts'] = []
     st.session_state['number_tokens'] = []
     st.session_state['model_name'] = []
     st.session_state['cost'] = []
@@ -99,9 +112,10 @@ with container:
         st.session_state['generated'].append(output)
         st.session_state['model_name'].append(model_name)
         st.session_state['total_tokens'].append(total_tokens)
+       
 
         # from https://openai.com/pricing#language-models
-        if model_name == "GPT-3.5":
+        if model_name == "gpt-3.5-turbo-16k":
             cost = total_tokens * 0.002 / 1000
         else:
             cost = (prompt_tokens * 0.03 + completion_tokens * 0.06) / 1000

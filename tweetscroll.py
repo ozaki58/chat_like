@@ -16,66 +16,68 @@ from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
 # set up a new Selenium driver
-driver= webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+
 
 # 今のところ５００ツイートくらいの人しかできない
-username = "shuukatsu_9720"
-URL = "https://twitter.com/" + username 
+
+def tweet_scrape(twitter_id):
+    driver= webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+    i=twitter_id
+    username = f"{i}"
+    URL = "https://twitter.com/" + username 
 
 # load the URL in the Selenium driver
-driver.get(URL)
-time.sleep(10) #change according to your pc and internet connection
+    driver.get(URL)
+    time.sleep(10) #change according to your pc and internet connection
     
-tweets = []
-result = False
+    tweets = []
+    result = False
     
 # Get scroll height after first time page load
-last_height = driver.execute_script("return document.body.scrollHeight")
+    last_height = driver.execute_script("return document.body.scrollHeight")
 
-last_elem=''
-current_elem=''
+    last_elem=''
+    current_elem=''
 
-while True:
+    while True:
     
     # Scroll  to bottom
-    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
     # Wait to load page
-    time.sleep(6)
+        time.sleep(6)
     # Calculate new scroll height and compare with last scroll height
-    new_height = driver.execute_script("return document.body.scrollHeight")
-    if new_height == last_height:
-        break
-    last_height = new_height
-    
-    #update all_tweets to keep loop
-    all_tweets = driver.find_elements(By.XPATH, '//div[@data-testid]//article[@data-testid="tweet"]')
+        new_height = driver.execute_script("return document.body.scrollHeight")
+        if new_height == last_height:
+            break
+        last_height = new_height
+        
+        #update all_tweets to keep loop
+        all_tweets = driver.find_elements(By.XPATH, '//div[@data-testid]//article[@data-testid="tweet"]')
 
-    for item in all_tweets[1:]: # skip tweet already scrapped
+        for item in all_tweets[1:]: # skip tweet already scrapped
 
-        print('--- date ---')
-        try:
-            date = item.find_element(By.XPATH, './/time').text
-        except:
-            date = '[empty]'
-        print(date)
+            print('--- date ---')
+            try:
+                date = item.find_element(By.XPATH, './/time').text
+            except:
+                date = '[empty]'
+            print(date)
 
-        print('--- text ---')
-        try:
-            text = item.find_element(By.XPATH, './/div[@data-testid="tweetText"]').text
-        except:
-            text = '[empty]'
-        print(text)
+            print('--- text ---')
+            try:
+                text = item.find_element(By.XPATH, './/div[@data-testid="tweetText"]').text
+            except:
+                text = '[empty]'
+            print(text)
 
-       
-        #Append new tweets replies to tweet array
-        tweets.append([username, text, date])
-               
-        if (last_elem == current_elem):
-            result = True
-        else:
-            last_elem = current_elem
+        
+            #Append new tweets replies to tweet array
+            tweets.append([username, text, date])
+                
+            if (last_elem == current_elem):
+                result = True
+            else:
+                last_elem = current_elem
 
-
-print(tweets)
-df = pd.DataFrame(tweets, columns=['name','Tweet', 'Date of Tweet'])
-print(df)
+    return tweets
+   
