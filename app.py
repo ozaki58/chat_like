@@ -1,5 +1,6 @@
 import openai
 import streamlit as st
+import streamlit.web.cli as stcli
 from streamlit_chat import message
 import tweetscroll as ts
 
@@ -69,7 +70,7 @@ if clear_button:
     st.session_state['messages'] = [
         {"role": "system", "content": "You are a helpful assistant."}
     ]
-    st.session_state['texts'] = []
+    
     st.session_state['number_tokens'] = []
     st.session_state['model_name'] = []
     st.session_state['cost'] = []
