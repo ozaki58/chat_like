@@ -9,8 +9,8 @@ st.set_page_config(page_title="AVA", page_icon=":robot_face:")
 st.markdown("<h1 style='text-align: center;'>好きな人と喋ろう</h1>", unsafe_allow_html=True)
 
 # Set org ID and API key
-openai.organization = "org-gdPQy5nvNbHoCtT9Lbqxn8rp"
-openai.api_key = "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"
+openai.organization = ""
+openai.api_key = ""
 
 # Initialise session state variables
 if 'generated' not in st.session_state:
@@ -22,7 +22,7 @@ if 'past' not in st.session_state:
 if 'messages' not in st.session_state:
     st.session_state['messages'] = [
         {"role": "system",
-         "content": "あなたはモノマネのプロです"
+         "content": "あなた人を模倣することが得意です"
         }
     ]
 if 'model_name' not in st.session_state:
@@ -55,12 +55,12 @@ else:
 if submitted:
     st.session_state['texts']=ts.tweet_scrape(twitter_id)
     st.session_state['messages'] = [
-        {"role": "system", "content": f"""鈴木さんと対話のシミュレーションを行います。
-鈴木さんの発言サンプルを以下に列挙します。
+        {"role": "system", "content": f"""対話のシミュレーションを行います。
+        あなたが参考にする発言サンプルを以下に列挙します。
          
 {st.session_state['texts']}
 
-上記例を参考に、性格や口調、言葉の作り方を模倣し、鈴木さんとして回答を構築してください。
+上記例を参考に、性格や口調、言葉の作り方を模倣し、その人として回答を構築してください。
 ではシミュレーションを開始します。"""}
     ]
 # reset everything
